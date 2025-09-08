@@ -11,7 +11,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     if (data.error) {
       cuerpo.innerHTML = `<tr><td>Error: ${data.error}</td></tr>`;
     } else {
-      cuerpo.innerHTML = `<tr><td>Saldo actual:</td><td>${data.saldo}</td></tr>`;
+      cuerpo.innerHTML = `<tr><td>Saldo actual CVU:</td><td>${data.saldo}</td></tr>`;
     }
   } catch (err) {
     console.error(err);
