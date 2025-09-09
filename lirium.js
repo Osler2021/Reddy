@@ -4,7 +4,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
   resumen.innerHTML = "<p>Cargando datos de Lirium...</p>";
 
   try {
-    const RES_URL = "https://script.google.com/macros/s/TU_WEBAPP/exec?accion=actualizar";  
+    const RES_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec?accion=actualizar";  
     const res = await fetch(RES_URL);
     const data = await res.json();
 
