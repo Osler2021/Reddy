@@ -63,3 +63,42 @@ th {
   position: sticky;
   top: 0;
 }
+
+/* Tarjeta de Resumen Lirium */
+#resumenLirium {
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+#resumenLirium h2 {
+  margin-top: 0;
+  color: #0077cc;
+  font-size: 18px;
+  border-bottom: 2px solid #0077cc;
+  padding-bottom: 5px;
+}
+
+#resumenLirium table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#resumenLirium td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+#resumenLirium td:first-child {
+  font-weight: bold;
+  color: #333;
+}
+
+#resumenLirium .total {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0077cc;
+}
