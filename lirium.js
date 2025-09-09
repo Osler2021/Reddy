@@ -17,6 +17,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       const lirium = data.lirium;
       const fechaStr = lirium.ultimoAgregado || "Sin datos";
 
+      // Solo actualizamos el div resumen, no la tabla de CVU
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <table>
