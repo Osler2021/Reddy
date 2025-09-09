@@ -8,17 +8,32 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     const res = await fetch(RES_URL);
     const data = await res.json();
 
+    // Si la API devuelve error
     if (data.error) {
-      // ⚠️ Mostrar error recibido de la API
-      resumen.innerHTML = `<p>⚠️ Error al cargar Lirium: ${data.error}</p>`;
+      let msg = `⚠️ Error al cargar Lirium: ${data.error}`;
+      // Detectar JWT expirado
+      if (data.error.includes("jwt_expired")) {
+        msg += " — Tu token expiró, por favor genera uno nuevo.";
+      }
+      resumen.innerHTML = `
+        <h2>Clientes Lirium</h2>
+        <p>${msg}</p>
+        <table>
+          <tr><td>Cantidad</td><td>0</td></tr>
+          <tr><td>Total ARSD</td><td>$ 0,00</td></tr>
+          <tr><td>Total USDC</td><td>0</td></tr>
+          <tr><td>Saldo Reddy ARSD</td><td>$ 0,00</td></tr>
+          <tr><td>Último agregado</td><td>Sin datos</td></tr>
+        </table>
+      `;
       return;
     }
 
+    // Si hay datos válidos
     if (data.lirium) {
       const lirium = data.lirium;
       const fechaStr = lirium.ultimoAgregado || "Sin datos";
 
-      // Solo actualizamos el div resumen, no la tabla de CVU
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <table>
@@ -30,15 +45,33 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
         </table>
       `;
     } else {
-      resumen.innerHTML = `<p>⚠️ No se obtuvieron datos de Lirium</p>`;
+      // Caso sin datos de lirium
+      resumen.innerHTML = `
+        <h2>Clientes Lirium</h2>
+        <p>⚠️ No se obtuvieron datos de Lirium.</p>
+        <table>
+          <tr><td>Cantidad</td><td>0</td></tr>
+          <tr><td>Total ARSD</td><td>$ 0,00</td></tr>
+          <tr><td>Total USDC</td><td>0</td></tr>
+          <tr><td>Saldo Reddy ARSD</td><td>$ 0,00</td></tr>
+          <tr><td>Último agregado</td><td>Sin datos</td></tr>
+        </table>
+      `;
     }
 
   } catch (err) {
     console.error(err);
 
-    // Mostrar error detallado en la web
-    let msg = "❌ Error de red o API";
-    if (err.message) msg += `: ${err.message}`;
-    resumen.innerHTML = `<p>${msg}</p>`;
+    resumen.innerHTML = `
+      <h2>Clientes Lirium</h2>
+      <p>❌ Error de red o API: ${err.message || err}</p>
+      <table>
+        <tr><td>Cantidad</td><td>0</td></tr>
+        <tr><td>Total ARSD</td><td>$ 0,00</td></tr>
+        <tr><td>Total USDC</td><td>0</td></tr>
+        <tr><td>Saldo Reddy ARSD</td><td>$ 0,00</td></tr>
+        <tr><td>Último agregado</td><td>Sin datos</td></tr>
+      </table>
+    `;
   }
 });
