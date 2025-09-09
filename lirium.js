@@ -1,13 +1,10 @@
 // 📌 lirium.js
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
-
-  // Mensaje de carga
-  resumen.innerHTML = "<p>Cargando Lirium...</p>";
+  resumen.innerHTML = "<p>Cargando datos de Lirium...</p>";
 
   try {
-    const RES_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec?accion=actualizar";  
-    
+    const RES_URL = "https://script.google.com/macros/s/TU_WEBAPP/exec?accion=actualizar";  
     const res = await fetch(RES_URL);
     const data = await res.json();
 
@@ -16,15 +13,19 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       return;
     }
 
-    // --- Mostrar resumen Lirium ---
     if (data.lirium) {
+      const lirium = data.lirium;
+      const fechaStr = lirium.ultimoAgregado || "Sin datos";
+
       resumen.innerHTML = `
-        <p><strong>-- Clientes Lirium --</strong></p>
-        <p>Cantidad: ${data.lirium.cantidad || 0}</p>
-        <p>Total ARSD: $ ${Number(data.lirium.totalARSD || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-        <p>Total USDC: ${Number(data.lirium.totalUSDC || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-        <p>Saldo Reddy ARSD: $ ${Number(data.lirium.saldoReddy || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-        <p>Último agregado: ${data.lirium.ultimoAgregado || "Sin datos"}</p>
+        <h2>Clientes Lirium</h2>
+        <table>
+          <tr><td>Cantidad</td><td>${lirium.cantidad || 0}</td></tr>
+          <tr><td>Total ARSD</td><td>$ ${Number(lirium.totalARSD || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
+          <tr><td>Total USDC</td><td>${Number(lirium.totalUSDC || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
+          <tr><td>Saldo Reddy ARSD</td><td>$ ${Number(lirium.saldoReddy || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
+          <tr><td>Último agregado</td><td>${fechaStr}</td></tr>
+        </table>
       `;
     }
 
