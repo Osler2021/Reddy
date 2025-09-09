@@ -1,56 +1,52 @@
-async function cargarSaldosLirium() {
+// 📌 lirium.js
+document.getElementById("btnCargar").addEventListener("click", async () => {
   const cuerpo = document.getElementById("cuerpo");
+  cuerpo.innerHTML = "<tr><td colspan='2'>Cargando...</td></tr>";
 
   try {
-    const res = await fetch("https://TU_SERVIDOR_RENDER/lirium");
+    // 👇 Reemplazá con la URL de tu WebApp publicado en Google Apps Script
+    const RES_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec?accion=actualizar";  
+    
+    const res = await fetch(RES_URL);
     const data = await res.json();
 
-    if (!data.clientes || !Array.isArray(data.clientes)) {
-      cuerpo.insertAdjacentHTML("beforeend", `<tr><td>Error: no se obtuvieron clientes</td></tr>`);
+    if (data.error) {
+      cuerpo.innerHTML = `<tr><td colspan="2">⚠️ Error: ${data.error}</td></tr>`;
       return;
     }
 
-    let totalARSD = 0, totalUSDC = 0, saldoReddy = 0, fechaUltimo = null;
+    // --- Mostrar saldo CVU ---
+    cuerpo.innerHTML = `
+      <tr><td colspan="2"><strong>-- Saldo CVU --</strong></td></tr>
+      <tr><td>Saldo:</td><td>$ ${Number(data.saldoCVU || 0).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}</td></tr>
+    `;
 
-    data.clientes.forEach(c => {
-      const arsd = parseFloat(c.saldo_ARSD) || 0;
-      const usdc = parseFloat(c.saldo_USDC) || 0;
-      const created = new Date(c.created_at);
-
-      if (c.id === "a52c054818c645fcb0ca981c9e2187ce") {
-        saldoReddy = arsd;
-      } else {
-        totalARSD += arsd;
-      }
-      totalUSDC += usdc;
-
-      if (!isNaN(created.getTime())) {
-        if (!fechaUltimo || created > fechaUltimo) fechaUltimo = created;
-      }
-    });
-
-    const fechaStr = fechaUltimo
-      ? fechaUltimo.toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })
-      : "Sin datos";
-
-    cuerpo.insertAdjacentHTML("beforeend", `
-      <tr><td colspan="2"><strong>-- Saldos Lirium --</strong></td></tr>
-      <tr><td>Cantidad de clientes:</td><td>${data.clientes.length}</td></tr>
-      <tr><td>Total ARSD:</td><td>$ ${totalARSD.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
-      <tr><td>Total USDC:</td><td>${totalUSDC.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
-      <tr><td>Saldo Reddy ARSD:</td><td>$ ${saldoReddy.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
-      <tr><td>Último agregado:</td><td>${fechaStr}</td></tr>
-    `);
+    // --- Mostrar resumen Lirium ---
+    if (data.lirium) {
+      cuerpo.insertAdjacentHTML("beforeend", `
+        <tr><td colspan="2"><strong>-- Clientes Lirium --</strong></td></tr>
+        <tr><td>Cantidad:</td><td>${data.lirium.cantidad || 0}</td></tr>
+        <tr><td>Total ARSD:</td><td>$ ${Number(data.lirium.totalARSD || 0).toLocaleString("es-AR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}</td></tr>
+        <tr><td>Total USDC:</td><td>${Number(data.lirium.totalUSDC || 0).toLocaleString("es-AR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}</td></tr>
+        <tr><td>Saldo Reddy ARSD:</td><td>$ ${Number(data.lirium.saldoReddy || 0).toLocaleString("es-AR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}</td></tr>
+        <tr><td>Último agregado:</td><td>${data.lirium.ultimoAgregado || "Sin datos"}</td></tr>
+      `);
+    }
 
   } catch (err) {
     console.error(err);
-    cuerpo.insertAdjacentHTML("beforeend", `<tr><td>Error de red o API</td></tr>`);
+    cuerpo.innerHTML = `<tr><td colspan="2">❌ Error de red o API</td></tr>`;
   }
-}
-
-// Llamar después de mostrar el saldo CVU
-document.getElementById("btnCargar").addEventListener("click", async () => {
-  // tu código actual de saldo CVU aquí
-  await cargarSaldosLirium(); // agrega los saldos Lirium debajo
 });
-
