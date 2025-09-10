@@ -48,8 +48,9 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     
     console.log("Datos obtenidos:", data);
     
-    // --- PASO 3: Renderizar resultados ---
+    // --- PASO 4: Renderizar resultados ---
     if (!data || !data.lirium || Number(data.lirium.cantidad) === 0) {
+      console.warn("⚠️ No hay datos válidos:", data);
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <p>⚠️ No se obtuvieron datos de Lirium.</p>
