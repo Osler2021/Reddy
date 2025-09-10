@@ -1,4 +1,4 @@
-// 📌 lirium.js (versión con progreso en tiempo real)
+// 📌 lirium.js (versión con polling seguro, progreso en tiempo real y contador)
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
   resumen.innerHTML = "<p>⏳ Iniciando carga de datos de Lirium...</p>";
@@ -6,12 +6,17 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
   try {
     const BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";
 
-    // Paso 1: iniciar actualización
+    // --- Paso 1: iniciar actualización ---
     resumen.innerHTML = "<p>🔄 Solicitando actualización de datos...</p>";
-    await fetch(`${BASE_URL}?accion=actualizar`, { cache: "no-store" });
+    const resUpdate = await fetch(`${BASE_URL}?accion=actualizar`, { cache: "no-store" });
+    const dataUpdate = await resUpdate.json();
+    if (dataUpdate.error) {
+      resumen.innerHTML = `<p>⚠️ Error al solicitar actualización: ${dataUpdate.error}</p>`;
+      return;
+    }
 
-    // Paso 2: poll para consultar datos y mostrar progreso
-    const maxAttempts = 30;   // número máximo de intentos
+    // --- Paso 2: polling con contador de tiempo ---
+    const maxAttempts = 40;   // total de intentos (~1 minuto)
     const delayMs = 1500;     // intervalo entre intentos
     let data = null;
     let lastCantidad = 0;
@@ -26,24 +31,25 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       }
 
       const cantidad = data.lirium?.cantidad || 0;
+      const tiempoRestante = Math.max(0, Math.ceil((maxAttempts - i) * (delayMs / 1000)));
 
-      // Mostrar progreso aproximado
+      // Mostrar progreso solo si cambió la cantidad
       if (cantidad !== lastCantidad) {
-        resumen.innerHTML = `<p>📡 Descargando clientes... ${cantidad} clientes cargados</p>`;
+        resumen.innerHTML = `<p>📡 Descargando clientes... ${cantidad} clientes cargados<br>⏱ Tiempo restante aprox.: ${tiempoRestante} seg</p>`;
         lastCantidad = cantidad;
+      } else {
+        resumen.innerHTML = `<p>📡 Esperando datos... ${cantidad} clientes cargados<br>⏱ Tiempo restante aprox.: ${tiempoRestante} seg</p>`;
       }
 
-      // Si ya hay clientes, finalizamos
-      if (cantidad > 0) {
-        break;
-      }
+      // Si ya hay clientes y montos cargados, terminamos
+      if (cantidad > 0 && data.lirium.totalARSD !== 0) break;
 
       await new Promise(r => setTimeout(r, delayMs));
     }
 
     console.log("Datos finales:", data);
 
-    // Render final
+    // --- Render final ---
     if (!data || !data.lirium || Number(data.lirium.cantidad) === 0) {
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
@@ -72,6 +78,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
         <tr><td>Último agregado</td><td>${fechaStr}</td></tr>
       </table>
     `;
+
   } catch (err) {
     console.error(err);
     resumen.innerHTML = `
@@ -80,3 +87,4 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     `;
   }
 });
+
