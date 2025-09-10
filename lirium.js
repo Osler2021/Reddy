@@ -1,4 +1,4 @@
-// 📌 lirium.js (versión con polling seguro, progreso en tiempo real y contador)
+// 📌 lirium.js (polling seguro con trigger de Google Apps Script)
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
   resumen.innerHTML = "<p>⏳ Iniciando carga de datos de Lirium...</p>";
@@ -6,7 +6,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
   try {
     const BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";
 
-    // --- Paso 1: iniciar actualización ---
+    // --- Paso 1: iniciar actualización vía trigger ---
     resumen.innerHTML = "<p>🔄 Solicitando actualización de datos...</p>";
     const resUpdate = await fetch(`${BASE_URL}?accion=actualizar`, { cache: "no-store" });
     const dataUpdate = await resUpdate.json();
@@ -16,7 +16,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     }
 
     // --- Paso 2: polling con contador de tiempo ---
-    const maxAttempts = 40;   // total de intentos (~1 minuto)
+    const maxAttempts = 40;   // total de intentos (~1 min)
     const delayMs = 1500;     // intervalo entre intentos
     let data = null;
     let lastCantidad = 0;
@@ -33,7 +33,6 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       const cantidad = data.lirium?.cantidad || 0;
       const tiempoRestante = Math.max(0, Math.ceil((maxAttempts - i) * (delayMs / 1000)));
 
-      // Mostrar progreso solo si cambió la cantidad
       if (cantidad !== lastCantidad) {
         resumen.innerHTML = `<p>📡 Descargando clientes... ${cantidad} clientes cargados<br>⏱ Tiempo restante aprox.: ${tiempoRestante} seg</p>`;
         lastCantidad = cantidad;
@@ -41,7 +40,6 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
         resumen.innerHTML = `<p>📡 Esperando datos... ${cantidad} clientes cargados<br>⏱ Tiempo restante aprox.: ${tiempoRestante} seg</p>`;
       }
 
-      // Si ya hay clientes y montos cargados, terminamos
       if (cantidad > 0 && data.lirium.totalARSD !== 0) break;
 
       await new Promise(r => setTimeout(r, delayMs));
@@ -87,4 +85,3 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     `;
   }
 });
-
