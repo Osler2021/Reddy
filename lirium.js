@@ -13,12 +13,17 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       throw new Error("No se pudo obtener JWT desde Render");
     }
 
-    // 2. Llamar al GAS pasándole el token
+    // 2. Llamar al GAS enviando el token en POST
     const RES_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";  
-    const res = await fetch(`${RES_URL}?accion=actualizar&jwt=${encodeURIComponent(jwt)}`);
+    const res = await fetch(RES_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accion: "actualizar", jwt })
+    });
+
     const data = await res.json();
 
-    // 3. Procesar respuesta
+    // 3. Procesar respuesta (igual que antes)
     if (data.error) {
       let msg = `⚠️ Error al cargar Lirium: ${data.error}`;
       if (data.error.includes("jwt_expired")) {
