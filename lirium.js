@@ -1,4 +1,4 @@
-// 📌 lirium.js (versión con polling)
+// 📌 lirium.js (versión con progreso en tiempo real)
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
   resumen.innerHTML = "<p>⏳ Iniciando carga de datos de Lirium...</p>";
@@ -6,42 +6,45 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
   try {
     const BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";
 
-    // Paso 1: pedir actualización
-    resumen.innerHTML = "<p>🔄 Solicitando actualización...</p>";
-    const resUpdate = await fetch(`${BASE_URL}?accion=actualizar`, { cache: "no-store" });
-    const dataUpdate = await resUpdate.json();
-    if (dataUpdate.error) {
-      resumen.innerHTML = `<p>⚠️ Error al solicitar actualización: ${dataUpdate.error}</p>`;
-      return;
-    }
+    // Paso 1: iniciar actualización
+    resumen.innerHTML = "<p>🔄 Solicitando actualización de datos...</p>";
+    await fetch(`${BASE_URL}?accion=actualizar`, { cache: "no-store" });
 
-    // Paso 2: poll para consultar datos ya escritos en la hoja
-    resumen.innerHTML = "<p>📡 Esperando datos (esto puede tardar unos segundos)...</p>";
-    const maxAttempts = 15;   // total de intentos
-    const delayMs = 2000;     // espera entre intentos (2 segundos)
+    // Paso 2: poll para consultar datos y mostrar progreso
+    const maxAttempts = 30;   // número máximo de intentos
+    const delayMs = 1500;     // intervalo entre intentos
     let data = null;
+    let lastCantidad = 0;
+
     for (let i = 0; i < maxAttempts; i++) {
       const res = await fetch(`${BASE_URL}?accion=consultar`, { cache: "no-store" });
       data = await res.json();
 
-      // Si vino un error, lo cortamos
       if (data.error) {
         resumen.innerHTML = `<p>⚠️ Error al consultar datos: ${data.error}</p>`;
         return;
       }
 
-      if (data.lirium && data.lirium.cantidad && Number(data.lirium.cantidad) > 0) {
-        break; // ya tenemos datos
+      const cantidad = data.lirium?.cantidad || 0;
+
+      // Mostrar progreso aproximado
+      if (cantidad !== lastCantidad) {
+        resumen.innerHTML = `<p>📡 Descargando clientes... ${cantidad} clientes cargados</p>`;
+        lastCantidad = cantidad;
       }
 
-      // si no hay datos aún, esperar y reintentar
+      // Si ya hay clientes, finalizamos
+      if (cantidad > 0) {
+        break;
+      }
+
       await new Promise(r => setTimeout(r, delayMs));
     }
 
-    console.log("Resultado final de consultar:", data);
+    console.log("Datos finales:", data);
 
-    // Render final (igual a tu versión original)
-    if (!data || !data.lirium || Object.keys(data.lirium).length === 0) {
+    // Render final
+    if (!data || !data.lirium || Number(data.lirium.cantidad) === 0) {
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <p>⚠️ No se obtuvieron datos de Lirium.</p>
@@ -58,6 +61,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
     const lirium = data.lirium;
     const fechaStr = lirium.ultimoAgregado || "Sin datos";
+
     resumen.innerHTML = `
       <h2>Clientes Lirium</h2>
       <table>
