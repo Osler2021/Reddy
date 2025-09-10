@@ -1,31 +1,17 @@
-/// 📌 lirium.js
+// 📌 lirium.js
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
   resumen.innerHTML = "<p>Cargando datos de Lirium...</p>";
 
   try {
-    // 1. Obtener token desde Render
-    const tokenRes = await fetch("https://jwt-server-online.onrender.com/jwt");
-    const tokenData = await tokenRes.json();
-    const jwt = tokenData.jwt || tokenData.token || tokenData.access_token;
-
-    if (!jwt) {
-      throw new Error("No se pudo obtener JWT desde Render");
-    }
-
-    // 2. Llamar al GAS enviando el token en POST
-    const RES_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";  
-    const res = await fetch(RES_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accion: "actualizar", jwt })
-    });
-
+    const RES_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec?accion=actualizar";  
+    const res = await fetch(RES_URL);
     const data = await res.json();
 
-    // 3. Procesar respuesta (igual que antes)
+    // Si la API devuelve error
     if (data.error) {
       let msg = `⚠️ Error al cargar Lirium: ${data.error}`;
+      // Detectar JWT expirado
       if (data.error.includes("jwt_expired")) {
         msg += " — Tu token expiró, por favor genera uno nuevo.";
       }
@@ -43,9 +29,11 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       return;
     }
 
+    // Si hay datos válidos
     if (data.lirium) {
       const lirium = data.lirium;
       const fechaStr = lirium.ultimoAgregado || "Sin datos";
+
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <table>
@@ -57,6 +45,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
         </table>
       `;
     } else {
+      // Caso sin datos de lirium
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <p>⚠️ No se obtuvieron datos de Lirium.</p>
@@ -72,6 +61,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
   } catch (err) {
     console.error(err);
+
     resumen.innerHTML = `
       <h2>Clientes Lirium</h2>
       <p>❌ Error de red o API: ${err.message || err}</p>
