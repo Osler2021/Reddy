@@ -8,13 +8,23 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     const res = await fetch(RES_URL);
     const data = await res.json();
 
-    // Si la API devuelve error
+    // 🚨 Caso error devuelto por Apps Script
     if (data.error) {
       let msg = `⚠️ Error al cargar Lirium: ${data.error}`;
+
       // Detectar JWT expirado
       if (data.error.includes("jwt_expired")) {
         msg += " — Tu token expiró, por favor genera uno nuevo.";
       }
+
+      // Mostrar campos extra devueltos por el servidor
+      if (data.raw) {
+        msg += `<br><small>Raw: ${data.raw}</small>`;
+      }
+      if (data.jwt) {
+        msg += `<br><small>JWT: ${data.jwt}</small>`;
+      }
+
       resumen.innerHTML = `
         <h2>Clientes Lirium</h2>
         <p>${msg}</p>
@@ -29,7 +39,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
       return;
     }
 
-    // Si hay datos válidos
+    // ✅ Caso datos válidos de Lirium
     if (data.lirium) {
       const lirium = data.lirium;
       const fechaStr = lirium.ultimoAgregado || "Sin datos";
