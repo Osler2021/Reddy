@@ -1,7 +1,7 @@
 // 📌 lirium.js (versión simplificada y directa)
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
-  const BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";
+  const BASE_URL = "https://script.google.com/macros/s/AKfycbzjh-oBF8iT7dKnedMgLojDMJ5Pl1TCFVQ2osCIZPINtROPkNQ3U7GmGRcsIXHgbQAUKQ/exec";
   
   try {
     resumen.innerHTML = "<p>🔄 Actualizando datos desde API Lirium...</p><p><small>Esto puede tomar 30-60 segundos</small></p>";
