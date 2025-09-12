@@ -8,22 +8,19 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     // URLs de tus endpoints App Script
     // -------------------
     const TOKEN_URL = "https://script.google.com/macros/s/AKfycbz8ySw09_uSuxqbOL45DObTYUNxLftt3UVb9osVTk6uGQIKZX47mGPOhqgVZ2BLdnlD2A/exec"; // doGet: obtener token
-    const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec; // doPost: guardar token y actualizar
+    const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec"; // doPost: guardar token y actualizar
 
     // -------------------
     // 1️⃣ Obtener token desde Render vía App Script
     // -------------------
-    // Haces fetch al endpoint GET que devuelve el token. Esto evita exponer tu Render URL directamente.
     const tokenRes = await fetch(TOKEN_URL, { cache: "no-store" });
     const tokenData = await tokenRes.json();
     if (!tokenData.jwt) throw new Error("No se pudo obtener token");
-    const jwt = tokenData.jwt; // Guardamos el JWT
+    const jwt = tokenData.jwt;
 
     // -------------------
     // 2️⃣ Guardar token en la hoja 'lirium!C2' usando POST
     // -------------------
-    // Mandamos el JWT al endpoint POST para que lo guarde en la hoja. 
-    // Esto permite que tu App Script lo use luego para llamadas a Lirium API.
     const guardarRes = await fetch(GAS_BASE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,13 +33,11 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     // 3️⃣ Actualizar movimientos/saldos en Google Sheets
     //     Ahora se hace con POST y enviando 'accion: actualizar'
     // -------------------
-    // Llamamos a tu endpoint POST con accion "actualizar". Tu App Script
-    // se encargará de leer el token de C2 y actualizar movimientos/clientes.
     const actualizarRes = await fetch(GAS_BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${jwt}` // opcional, tu GS ya lee C2
+        "Authorization": `Bearer ${jwt}`
       },
       body: JSON.stringify({ accion: "actualizar" })
     });
@@ -52,7 +47,6 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     // -------------------
     // 4️⃣ Leer datos devueltos y mostrarlos en la web
     // -------------------
-    // Aquí puedes mostrar un resumen de movimientos y saldos en la web
     const lirium = data.lirium || {};
     const fechaStr = lirium.ultimaActualizacion || "Sin datos";
 
