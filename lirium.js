@@ -4,11 +4,11 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
   resumen.innerHTML = "<p>Cargando datos de Lirium...</p>";
 
   try {
-    // 🔑 Endpoint que devuelve el token desde Google Apps Script
-    const TOKEN_URL = "https://script.google.com/macros/s/AKfycbz8ySw09_uSuxqbOL45DObTYUNxLftt3UVb9osVTk6uGQIKZX47mGPOhqgVZ2BLdnlD2A/exec";  // 👉 reemplazá con el URL de tu GAS (el que tiene doGet del token)
+    // 🔑 Endpoint que devuelve el token (lo expone tu GAS con doGet)
+    const TOKEN_URL = "https://script.google.com/macros/s/AKfycbz8ySw09_uSuxqbOL45DObTYUNxLftt3UVb9osVTk6uGQIKZX47mGPOhqgVZ2BLdnlD2A/exec";
 
-    // 🌐 Endpoint que devuelve los datos procesados
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec?accion=actualizar";  
+    // 🌐 Endpoint principal de tu WebApp (acciones: guardarToken / actualizar)
+    const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec";
 
     // 1️⃣ Pedir token primero
     const tokenRes = await fetch(TOKEN_URL, { cache: "no-store" });
@@ -20,8 +20,15 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
     const jwt = tokenData.jwt;
 
-    // 2️⃣ Usar el token en la llamada de datos
-    const res = await fetch(DATA_URL, {
+    // 2️⃣ Guardar token en lirium!C2
+    await fetch(GAS_BASE_URL + "?accion=guardarToken", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: jwt })
+    });
+
+    // 3️⃣ Usar el token en la llamada de actualización
+    const res = await fetch(GAS_BASE_URL + "?accion=actualizar", {
       cache: "no-store",
       headers: {
         "Authorization": `Bearer ${jwt}`
@@ -48,7 +55,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
     // ✅ Mostrar datos recibidos de App Script
     const lirium = data.lirium || {};
-    const fechaStr = lirium.ultimaActualizacion || "Sin datos";  // ⚠️ ajustado a "última actualización"
+    const fechaStr = lirium.ultimaActualizacion || "Sin datos";
 
     resumen.innerHTML = `
       <h2>Clientes Lirium</h2>
