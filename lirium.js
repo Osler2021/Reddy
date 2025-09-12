@@ -7,7 +7,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     // -------------------
     // URLs de tus endpoints App Script
     // -------------------
-    const TOKEN_URL = "https://script.google.com/macros/s/AKfycbz8ySw09_uSuxqbOL45DObTYUNxLftt3UVb9osVTk6uGQIKZX47mGPOhqgVZ2BLdnlD2A/exec""; // doGet: obtener token
+    const TOKEN_URL = "https://script.google.com/macros/s/AKfycbz8ySw09_uSuxqbOL45DObTYUNxLftt3UVb9osVTk6uGQIKZX47mGPOhqgVZ2BLdnlD2A/exec"; // doGet: obtener token
     const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbxccEWBhTFF-Y966-po7WTJyC4Q9cV5RahrMfBP5A6d4-TnuxJLe0lK0cdLvDP27wq9wA/exec; // doPost: guardar token y actualizar
 
     // -------------------
