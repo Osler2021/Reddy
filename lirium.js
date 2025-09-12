@@ -1,19 +1,26 @@
+// 🔹 Evento al hacer click en "Cargar Movimientos"
 document.getElementById("btnCargar").addEventListener("click", async () => {
   const resumen = document.getElementById("resumenLirium");
   resumen.innerHTML = "<p>Cargando datos de Lirium...</p>";
 
   try {
-    const TOKEN_URL = "https://script.google.com/macros/s/TU_ID_DOGET/exec";
-    const GAS_BASE_URL = "https://script.google.com/macros/s/TU_ID_DOPOST/exec";
+    // -------------------
+    // URLs de tus endpoints App Script
+    // -------------------
+    const TOKEN_URL = "https://script.google.com/macros/s/TU_ID_DOGET/exec"; // doGet: obtener token
+    const GAS_BASE_URL = "https://script.google.com/macros/s/TU_ID_DOPOST/exec"; // doPost: guardar token y actualizar
 
-    // 1️⃣ Pedir token
+    // -------------------
+    // 1️⃣ Obtener token desde Render vía App Script
+    // -------------------
     const tokenRes = await fetch(TOKEN_URL, { cache: "no-store" });
     const tokenData = await tokenRes.json();
     if (!tokenData.jwt) throw new Error("No se pudo obtener token");
-
     const jwt = tokenData.jwt;
 
-    // 2️⃣ Guardar token en lirium!C2
+    // -------------------
+    // 2️⃣ Guardar token en la hoja 'lirium!C2' usando POST
+    // -------------------
     const guardarRes = await fetch(GAS_BASE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,15 +29,24 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     const guardarData = await guardarRes.json();
     if (!guardarData.ok) throw new Error("No se pudo guardar token: " + (guardarData.error || ""));
 
-    // 3️⃣ Usar token en la actualización (ejemplo)
-    const res = await fetch(GAS_BASE_URL + "?accion=actualizar", {
-      cache: "no-store",
-      headers: { "Authorization": `Bearer ${jwt}` }
+    // -------------------
+    // 3️⃣ Actualizar movimientos/saldos en Google Sheets
+    //     Ahora se hace con POST y enviando 'accion: actualizar'
+    // -------------------
+    const actualizarRes = await fetch(GAS_BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${jwt}`
+      },
+      body: JSON.stringify({ accion: "actualizar" })
     });
-
-    const data = await res.json();
+    const data = await actualizarRes.json();
     if (data.error) throw new Error(data.error);
 
+    // -------------------
+    // 4️⃣ Leer datos devueltos y mostrarlos en la web
+    // -------------------
     const lirium = data.lirium || {};
     const fechaStr = lirium.ultimaActualizacion || "Sin datos";
 
@@ -46,7 +62,20 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     `;
 
   } catch (err) {
+    // -------------------
+    // Manejo de errores en red, token o App Script
+    // -------------------
     console.error(err);
-    resumen.innerHTML = `<h2>Clientes Lirium</h2><p>❌ Error: ${err.message}</p>`;
+    resumen.innerHTML = `
+      <h2>Clientes Lirium</h2>
+      <p>❌ Error de red o API: ${err.message}</p>
+      <table>
+        <tr><td>Cantidad</td><td>0</td></tr>
+        <tr><td>Total ARSD</td><td>$ 0,00</td></tr>
+        <tr><td>Total USDC</td><td>0</td></tr>
+        <tr><td>Saldo Reddy ARSD</td><td>$ 0,00</td></tr>
+        <tr><td>Última actualización</td><td>Sin datos</td></tr>
+      </table>
+    `;
   }
 });
